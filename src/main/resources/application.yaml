@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: ejercicio-uno
+  cloud:
+    function:
+      definition: mensajesInput
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+          autoCreateTopics: true
+      bindings:
+        mensajes-output:
+          destination: mensajes
+          producer:
+            partitionCount: 1
+        mensajesInput-in-0:
+          destination: mensajes
+          consumer:
+            partitionCount: 1
+            autoOffsetReset: earliest
+
+kafka:
+  listener:
+    enabled: true
+
+logging:
+  level:
+    com.eventdriver.ejercicios.ejerciciouno.listener: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
