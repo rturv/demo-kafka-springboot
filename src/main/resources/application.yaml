@@ -1,31 +1,66 @@
+############################################################
+# Configuración de la aplicación Spring Boot
+############################################################
 spring:
+  # Nombre de la aplicación (útil en logs y herramientas de observabilidad)
   application:
     name: ejercicio-uno
+
+  # Spring Cloud Function / Stream: define funciones y bindings usados
   cloud:
+    # Nombre de la función definida en el contexto de Spring Cloud Function
+    # En este proyecto la función/bean que recibe mensajes se llama `mensajesInput`
     function:
       definition: mensajesInput
+
+    # Configuración de Spring Cloud Stream (binder Kafka)
     stream:
       kafka:
         binder:
+          # Brokers Kafka a los que conectar (host:puerto). Puede reemplazarse
+          # por una variable de entorno en entornos distintos a desarrollo.
           brokers: localhost:9092
+          # Si es true, el binder intentará crear topics automáticamente al usar
+          # bindings. Útil en desarrollo, evitar en producción si la gestión
+          # de topics está controlada por la plataforma.
           autoCreateTopics: true
+
+      # Bindings: mapeo entre canales de Spring Cloud Stream y topics Kafka
       bindings:
-        mensajes-output:
-          destination: mensajes
+        # Binding de salida: publica mensajes en el topic `mensajes`
+        mensajes-output: # El nombre del binding de salida (coincide con el usado en StreamBridge)
+          destination: mensajes # El topic Kafka al que se publicará
           producer:
+            # Número de particiones que el binder solicitará al crear el topic
             partitionCount: 1
+
+        # Binding de entrada: función que consume del topic `mensajes`
+        # La notación `mensajesInput-in-0` es el binding generado por la
+        # definición de función `mensajesInput` (entrada 0).
         mensajesInput-in-0:
-          destination: mensajes
+          destination: mensajes # El topic Kafka del que se consumirá
           consumer:
+            # Número de particiones que se espera en el topic (coincidir con producer)
             partitionCount: 1
+            # Offset reset: `earliest` para leer desde inicio o `latest` para solo nuevos
             autoOffsetReset: earliest
 
+############################################################
+# Opciones específicas de la lógica del ejemplo
+############################################################
 kafka:
   listener:
+    # Habilita o deshabilita el listener/consumer definido en la aplicación.
+    # Si es false la aplicación seguirá publicando mensajes, pero no consumirá.
     enabled: true
 
+############################################################
+# Configuración de logging
+############################################################
 logging:
+  # Nivel de logging para el paquete del listener (ajusta para más/menos detalle)
   level:
-    com.eventdriver.ejercicios.ejerciciouno.listener: INFO
+    com.eventdriver.ejercicios.ejerciciouno.listener: DEBUG
+  # Formato de salida por consola (timestamp + mensaje)
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
