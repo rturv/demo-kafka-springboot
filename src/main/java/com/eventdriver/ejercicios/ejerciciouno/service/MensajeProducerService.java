@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
  */
 public class MensajeProducerService {
 
+    // Nombre del binding de salida definido en application.yaml
+    public static final String BINDING_NAME = "mensajes-output";
+
     private final StreamBridge streamBridge;
 
     public MensajeProducerService(StreamBridge streamBridge) {
@@ -23,7 +26,7 @@ public class MensajeProducerService {
 
     public String sendMensaje(MensajeRequest mensaje) {
         // Enviar el mensaje al binding mensajes-output
-        boolean sent = streamBridge.send("mensajes-output", mensaje);
+        boolean sent = streamBridge.send(BINDING_NAME, mensaje);
         if (sent) {
             // Devolver un UUID como messageId, ya que obtener el offset real requiere configuración adicional
             return java.util.UUID.randomUUID().toString();

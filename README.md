@@ -41,25 +41,54 @@ Ejemplo mínimo (application.yaml):
 
 ```yaml
 spring:
+  # Nombre de la aplicación (útil en logs y herramientas de observabilidad)
   application:
     name: ejercicio-uno
-spring:
+
+  # Spring Cloud Function / Stream: define funciones y bindings usados
   cloud:
+    # Nombre de la función definida en el contexto de Spring Cloud Function
+    # En este proyecto la función/bean que recibe mensajes se llama `mensajesInput`
+    function:
+      definition: mensajesInput
+
+    # Configuración de Spring Cloud Stream (binder Kafka)
     stream:
       kafka:
         binder:
+          # Brokers Kafka a los que conectar (host:puerto). Puede reemplazarse
+          # por una variable de entorno en entornos distintos a desarrollo.
           brokers: localhost:9092
-      bindings:
-        mensajes-output:
-          destination: mensajes
-        mensajesInput-in-0:
-          destination: mensajes
-          consumer:
-            autoOffsetReset: earliest
+          # Si es true, el binder intentará crear topics automáticamente al usar
+          # bindings. Útil en desarrollo, evitar en producción si la gestión
+          # de topics está controlada por la plataforma.
+          autoCreateTopics: true
 
+      # Bindings: mapeo entre canales de Spring Cloud Stream y topics Kafka
+      bindings:
+        # Binding de salida: publica mensajes en el topic `mensajes`
+        mensajes-output: # El nombre del binding de salida (coincide con el usado en StreamBridge)
+          destination: mensajes # El topic Kafka al que se publicará
+          producer:
+            # Número de particiones que el binder solicitará al crear el topic
+            partitionCount: 1
+
+        # Binding de entrada: función que consume del topic `mensajes`
+        # La notación `mensajesInput-in-0` es el binding generado por la
+        # definición de función `mensajesInput` (entrada 0).
+        mensajesInput-in-0:
+          destination: mensajes # El topic Kafka del que se consumirá
+          consumer:
+            # Número de particiones que se espera en el topic (coincidir con producer)
+            partitionCount: 1
+            # Offset reset: `earliest` para leer desde inicio o `latest` para solo nuevos
+            autoOffsetReset: earliest
 kafka:
   listener:
+    # Habilita o deshabilita el listener/consumer definido en la aplicación.
+    # Si es false la aplicación seguirá publicando mensajes, pero no consumirá.
     enabled: true
+
 ```
 
 Notas:
@@ -95,3 +124,14 @@ El Javadoc se generará en `target/site/apidocs`.
 
 Se recomienda usar `docker-compose` para levantar un Kafka local en desarrollo.
 Incluye ejemplo en `docker-compose.kafka.yml`.
+
+## OpenAPI / Swagger UI
+
+Este proyecto incluye `springdoc-openapi` y expone la documentación OpenAPI
+automáticamente al arrancar la aplicación.
+
+- Interfaz Swagger UI (navegador): http://localhost:8080/swagger-ui.html
+- OpenAPI JSON (máquina / herramientas): http://localhost:8080/v3/api-docs
+
+Si la aplicación se ejecuta en otro puerto (p. ej. `server.port`), sustituye
+`8080` por el puerto correspondiente.
