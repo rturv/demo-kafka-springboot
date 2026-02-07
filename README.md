@@ -37,6 +37,34 @@ Propiedades clave:
 - `spring.cloud.stream.bindings.mensajesInput-in-0.consumer.autoOffsetReset`: `earliest` o `latest`.
 - `kafka.listener.enabled`: `true|false` para activar el listener de consumo.
 
+Propiedad recomendada: consumer group id
+
+Para que múltiples instancias de la aplicación compartan el consumo de un
+topic (reparto de particiones) define el `group` del binding. Ejemplo:
+
+```yaml
+# Ejemplo: fijar group id del binding de entrada
+spring:
+  cloud:
+    stream:
+      bindings:
+        mensajesInput-in-0:
+          group: mi-grupo-spring
+```
+
+Alternativa (binders específicos Kafka):
+
+```yaml
+spring:
+  cloud:
+    stream:
+      kafka:
+        bindings:
+          mensajesInput-in-0:
+            consumer:
+              group: mi-grupo-spring
+```
+
 Ejemplo mínimo (application.yaml):
 
 ```yaml

@@ -39,6 +39,9 @@ spring:
         # definición de función `mensajesInput` (entrada 0).
         mensajesInput-in-0:
           destination: mensajes # El topic Kafka del que se consumirá
+          # Group id para consumidores: define el consumer group usado por Spring Cloud Stream
+          # Si varias instancias tienen el mismo group, las particiones se repartirán entre ellas.
+          group: mi-grupo-spring
           consumer:
             # Número de particiones que se espera en el topic (coincidir con producer)
             partitionCount: 1
